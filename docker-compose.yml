@@ -1,0 +1,40 @@
+version: "3.3"
+
+services: 
+    nginx:
+        build:
+            context: .
+            dockerfile: docker/Nginx.Dockerfile
+        ports: 
+            - 8088:80
+        links:
+            - fpm
+        volumes:
+            - ./:/var/www/intersection   
+    fpm:
+        build:
+            context: .
+            dockerfile: docker/Fpm.Dockerfile
+        volumes:
+            - ./:/var/www/intersection
+        links:
+            - mysql
+    mysql:
+        image: mysql:5.7
+        ports:
+            - 33061:3306
+        environment:
+                - MYSQL_ROOT_PASSWORD=root
+                - MYSQL_DATABASE=intersection
+        volumes:
+           - ./databases:/var/lib/mysql     
+
+    phpmyadmin:
+        image: phpmyadmin
+        restart: always
+        ports:
+            - 8080:80
+        links: 
+            - mysql:mysql
+        environment:
+        - PMA_ARBITRARY=1

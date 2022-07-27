@@ -2,17 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AvtosExport;
+use App\Imports\AvtosImport;
+use App\Imports\AvtosImportNoHead;
 use App\Models\Avto;
+use App\Models\Record;
+use App\Repositories\AvtosRepository;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AvtosController extends Controller
 {
-    public function __construct()
+    private $avtosRepository;
+
+    public function __construct(AvtosRepository $avtosRepository)
     { 
         $this->middleware('auth');
+
+        $this->avtosRepository = $avtosRepository;
     }
     /**
      * Display a listing of the resource.
@@ -21,30 +33,111 @@ class AvtosController extends Controller
      */
     public function index()
     {
-        
-            $avtos = DB::table('avtos')
-                    ->join('citizens','citizens.id','=','avtos.id_citisen')
-                    ->select('avtos.id', 'avtos.brand_avto', 'avtos.addit_inf', 'avtos.regis_num', 'avtos.color', 'citizens.full_name')
-                    ->get();
+        $avtos = $this->avtosRepository->indexAvtos();
 
-            return view('avto',[
-                "avtos"=>$avtos
-            ]);
+        $authUser = Auth::user()->id;
+        $authUsername = Auth::user()->username;
+
+        return view('avto',[
+            "avtos"=>$avtos,
+            "authUser"=>$authUser,
+            "authUsername"=>$authUsername
+        ]);
         
+    }
+    public function indexavto(){
+        $id_user = Auth::user()->id;
+        $avtos =  DB::table('avtos')
+            ->join('records', 'records.id_avto','=','avtos.id')
+            ->join('users', 'records.id_user','=','users.id')
+            ->select('avtos.id','avtos.id_citisen', 'avtos.brand_avto', 'avtos.addit_inf', 'avtos.regis_num', 'avtos.color','avtos.who_noticed','avtos.where_notice','avtos.detection_time','avtos.user')
+            ->where('records.id_user','=', $id_user)
+            ->get();
+
+        return view('avtoUser', [
+            'avtos'=>$avtos,
+            'id_user'=>$id_user
+        ]);
     }
 
 
     public function indexAdd(){
         $citisens = DB::table('citizens')
-
-        ->select('citizens.id','citizens.full_name')
-        ->get();
-
-
-            return view('addavtos',[
-                "citisens"=>$citisens,
-            ]);
+            ->select('citizens.id','citizens.full_name')
+            ->get();
+        $users = DB::table('users')
+            ->select('users.id','users.username')
+            ->get();
+        
+        return view('addavtos',[
+            "citisens"=>$citisens,
+            "users"=>$users
+        ]);
        
+    }
+
+    public function searchAvto(Request $request){
+        $s = $request->s;
+        $authUser = Auth::user()->id;
+        $authUsername = Auth::user()->username;
+        $avtos = DB::table('avtos')
+            ->select('avtos.id','avtos.brand_avto','avtos.id_citisen', 'avtos.addit_inf', 'avtos.regis_num', 'avtos.color','avtos.who_noticed','avtos.where_notice','avtos.detection_time','avtos.user', 'avtos.id_user')        
+            ->where('avtos.id_citisen','LIKE',"%{$s}%")
+            ->orWhere('avtos.id','LIKE',"%{$s}%")
+            ->orWhere('avtos.regis_num','LIKE',"%{$s}%")
+            ->orWhere('avtos.brand_avto','LIKE',"%{$s}%")
+            ->orWhere('avtos.color','LIKE',"%{$s}%")
+            ->orWhere('avtos.user','LIKE',"%{$s}%")
+            ->paginate(5);
+        
+        return view('avto', [
+            "avtos"=>$avtos,
+            "authUser"=>$authUser,
+            "authUsername"=>$authUsername,
+        ]);
+    }
+    public function searchAvtoUser(Request $request){
+        $s = $request->s;
+        
+        if (is_null($s)) {
+            $id_user = Auth::user()->id;
+            $avtos =  DB::table('avtos')
+                ->join('records', 'records.id_avto','=','avtos.id')
+                ->join('users', 'records.id_user','=','users.id')
+                ->select('avtos.id','records.id_user', 'avtos.brand_avto','avtos.id_citisen', 'avtos.addit_inf', 'avtos.regis_num', 'avtos.color','avtos.who_noticed','avtos.where_notice','avtos.detection_time','avtos.user')
+                ->where('records.id_user','=', $id_user)
+                ->get();
+
+            return view('avtoUser', [
+                'avtos'=>$avtos,
+                'id_user'=>$id_user
+            ]);
+        }
+        $id_user = Auth::user()->id;
+        $avtos =  DB::table('avtos')
+            ->join('records', 'records.id_avto','=','avtos.id')
+            ->join('users', 'records.id_user','=','users.id')
+            ->select('avtos.id','records.id_user', 'avtos.brand_avto','avtos.id_citisen', 'avtos.addit_inf', 'avtos.regis_num', 'avtos.color','avtos.who_noticed','avtos.where_notice','avtos.detection_time','avtos.user')
+            ->where('records.id_user','=', $id_user)
+            ->where('avtos.id_citisen','LIKE',"%{$s}%")
+            ->orWhere('avtos.brand_avto','LIKE',"%{$s}%")
+            ->where('records.id_user','=', $id_user)
+            ->orWhere('avtos.id','LIKE',"%{$s}%")
+            ->where('records.id_user','=', $id_user)
+            ->orWhere('avtos.user','LIKE',"%{$s}%")
+            ->where('records.id_user','=', $id_user)
+            ->orWhere('avtos.who_noticed','LIKE',"%{$s}%")
+            ->where('records.id_user','=', $id_user)
+            ->orWhere('avtos.where_notice','LIKE',"%{$s}%")
+            ->where('records.id_user','=', $id_user)
+            ->orWhere('avtos.detection_time','LIKE',"%{$s}%")
+            ->where('records.id_user','=', $id_user)
+            ->get();
+
+        return view('avtoUser', [
+            'avtos'=>$avtos,
+            'id_user'=>$id_user
+        ]);
     }
 
     /**
@@ -65,33 +158,57 @@ class AvtosController extends Controller
      */
     public function store(Request $request)
     {
-        // try{
             if ( $path = $request->file('photo')) {
                 $path = $request->file('photo')->store('avtos');
             }else {
                 $path = null;
             }
-            
-        
-                $params = $request->only(['id_citisen','brand_avto','regis_num','color','photo','addit_inf']);
-    
-           
+                $params = $request->only(['id_citisen','brand_avto','regis_num','color','photo','addit_inf','who_noticed','where_notice','detection_time','user','id_user']);
                 $params['photo']=$path;
+                $params['user']= Auth::user()->username;
+                $params['id_user']= Auth:: user()->id;
     
                 $avto = Avto::create($params);
                 $avto->save();
-                return redirect('avtoslist');
-        // }catch (Exception $e) {
-        //         echo 'Ошибака';
-        //             redirect()->back()
-        //                 ->with('error',$e->getMessage());
-        //          }
-           
-            
-            // 
-            
-            
+                $id_avto = $avto ->id;
+          
+                foreach ($request->user as $user) {
+                   $records = Record::create([
+                       "id_user"=>$user,
+                       "id_avto"=>$id_avto
+       
+                   ]);
+               }
+
+            return redirect('avtoslist');
+ 
+    }
+    public function showBorderAvtos($id){
+        $avtos = DB::table('avtos')
+                ->join('borders','avtos.id','=','borders.way_crossing')
+                ->select('avtos.id','avtos.brand_avto','avtos.regis_num','borders.full_name','borders.passport','borders.crossing_date','borders.checkpoint')
+                ->where('borders.way_crossing','=',$id)
+                ->get();
+
+        return view('avtos_border',["avtos"=>$avtos]);
         
+    }
+
+
+
+    public function AvtosExport(){
+        return Excel::download(new AvtosExport, 'avtos.xlsx');
+    }
+    public function AvtosImport(Request $request){
+        if ($request['haveHead'] == true) {
+            Excel::import(new  AvtosImport, $request->file('files'));
+        
+            return back()->withStatus('Успешно импортировано c шапкой!');
+        } elseif ($request['haveHead'] == null) {
+            Excel::import(new AvtosImportNoHead, $request->file('files'));
+        
+            return back()->withStatus('Успешно импортировано без шапки!');
+        }
     }
 
     /**
@@ -103,7 +220,11 @@ class AvtosController extends Controller
     public function show($id)
     {
         $avto = Avto::find($id);
-        return view('showAvto',compact('avto'));
+        $users = DB::table('users')
+            ->select('users.id','users.username')
+            ->get();
+
+        return view('showAvto',["users"=>$users], compact('avto'));
     }
 
     /**
@@ -124,24 +245,62 @@ class AvtosController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+
+    public function update(Request $request, Avto $avto)
     {
-        $params = $request->only(['id','id_citisen','brand_avto','regis_num','color','photo','addit_inf']); 
+        $params = $request->only(['id','id_citisen','brand_avto','regis_num','color','photo','addit_inf','who_noticed','where_notice','detection_time','user']); 
         $avto = Avto::find($params['id']);
-        if ( $path = $request->file('photo')) {
-            $path = $request->file('photo')->store('avtos');
-        }else {
-            $path = null;
-        }
-        $params['photo']=$path;
-       
-        $avto->id_citisen = $params["id_citisen"];
-        $avto->brand_avto = $params["brand_avto"];
-        $avto->regis_num = $params["regis_num"];
-        $avto->color = $params["color"];
-        // $avto->photo = $params["photo"];
-        $avto->addit_inf = $params["addit_inf"];
+        if ( $request->photo==null) {
+            $avto->id_citisen = $params["id_citisen"];
+            $avto->brand_avto = $params["brand_avto"];
+            $avto->regis_num = $params["regis_num"];
+            $avto->who_noticed = $params["who_noticed"];
+            $avto->where_notice = $params["where_notice"];
+            $avto->detection_time = $params["detection_time"];
+            $avto->addit_inf = $params["addit_inf"];
+
+            $id_avto = $avto ->id;
+
+           $delete = DB::table('records')->where('id_avto',$id_avto)->delete(); 
+          if (is_null($request->user)){
+            return $avto->save();
+          }
+                foreach ($request->user as $user) {
+                $records = Record::create([
+                "id_user"=>$user,
+                "id_avto"=>$id_avto
+                ]);}
+
         return $avto->save();
+        }else {
+            Storage::delete($avto->photo);
+        
+            $path = $request->file('photo')->store('avtos');
+            $params['photo']=$path;
+            $avto->id_citisen = $params["id_citisen"];
+            $avto->brand_avto = $params["brand_avto"];
+            $avto->regis_num = $params["regis_num"];
+            $avto->color = $params["color"];
+            $avto->photo = $params["photo"];
+            $avto->who_noticed = $params["who_noticed"];
+            $avto->where_notice = $params["where_notice"];
+            $avto->detection_time = $params["detection_time"];
+            $avto->addit_inf = $params["addit_inf"];
+
+        $id_avto = $avto ->id;
+       if (is_null($request->user)){
+         return $avto->save();
+       }else {
+        $delete = DB::table('records')->where('id_avto',$id_avto)->delete(); 
+        foreach ($request->user as $user) {
+        $records = Record::create([
+        "id_user"=>$user,
+        "id_avto"=>$id_avto
+        ]);}
+       }
+       
+        return $avto->save();
+    }
     }
 
     /**

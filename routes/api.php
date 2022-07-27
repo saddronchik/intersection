@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Citizen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\Console\Input\Input;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +19,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+// Route::get('/search',function(){
+//     $query = Input::get('query');
+//     $users = Citizen::where('full_name','like','%'.$query.'%')->get();
+//     return response()->json($users);
+//    });

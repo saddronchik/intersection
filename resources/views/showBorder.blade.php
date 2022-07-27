@@ -2,16 +2,13 @@
 @section('content')
 
     <div class="container">
-
         <div class="row">
             <div class="col-md-10">
-                <div class="alert alert-success messages" role="alert" style="display: none"></div>
-                
+                <div class="alert alert-success messages" role="alert" style="display: none"></div>  
                 <form action="/border/{id}" method="post" class="form" id="formUpdate" >
                     @csrf
                     <input type="hidden" name="id" value="{{ $border->id }}">
                     <table class="table table-hover">
-
                         <tbody>
                             <tr>
                                 <th> Поле</th>
@@ -37,8 +34,8 @@
                             </tr>
                             <tr>
                                 <td>Дата рождения</td>
-                                <td><input id="date_birth" name="date_birth" class="form-control"
-                                        style="border: none;" value="{{ $border->date_birth }}"></td>
+                                <td><input type="date" id="date_birth" name="date_birth" class="form-control"
+                                        style="border: none;" value="{{ $border->date_birth }}"> </td>
                             </tr>
                             <tr>
                                 <td>Паспорт</td>
@@ -47,13 +44,13 @@
                             </tr>
                             <tr>
                                 <td>Дата пересечения</td>
-                                <td><textarea id="crossing_date" name="crossing_date" class="form-control"
-                                        style="border: none;">{{ $border->crossing_date }}</textarea> </td>
+                                <td><input type="date"  id="crossing_date" name="crossing_date" class="form-control"
+                                        style="border: none;" value="{{ $border->crossing_date }}"> </td>
                             </tr>
                             <tr>
                                 <td>Время пересечения</td>
-                                <td><textarea id="crossing_time" name="crossing_time" class="form-control"
-                                        style="border: none;">{{ $border->crossing_time }}</textarea> </td>
+                                <td><input type="time" id="crossing_time" name="crossing_time" class="form-control"
+                                        style="border: none;" value="{{ $border->crossing_time }}"> </td>
                             </tr>
                             <tr>
                                 <td>Средство передвижения</td>
@@ -80,12 +77,20 @@
                                 <td><textarea id="place_regis" name="place_regis" class="form-control"
                                         style="border: none;">{{ $border->place_regis }}</textarea> </td>
                             </tr>
-
-                            
-
+                            <tr>
+                             
+                                <td>Доступ к просмотру записи</td>
+                          
+                                <td>  <div class="form-group" style="width:200px; height:100px; overflow:auto; border:solid 1px #C3E4FE;">
+                                      <fieldset id="shest">
+                                        <label><input type="checkbox" id="checkall"> Выбрать всех</label>
+                                      @foreach ( $users as $user)
+                                      <li class="list-group-item"><input type="checkbox" class="thing" name="user[]" id="user" value="{{ $user->id}}" >{{' '.$user->username }}</li>
+                                      @endforeach
+                                    </fieldset>
+                                </td>
+                            </tr>    
                         </tbody>
-
-
 
                     </table>
                     <a href="/borderslist" class="btn btn-primary">Назад</a>
@@ -94,8 +99,8 @@
             </div>
             </form>
             <script>
-
-
+                
+                
                 const formUpdate = document.getElementById('formUpdate');
                 const messageBlock = document.querySelector('.messages');
 
@@ -103,6 +108,23 @@
                     e.preventDefault();
 
                     const formData = new FormData(this);
+                    const checkbox = document.querySelectorAll('.thing');
+                    let validateCHeckbox = false;
+
+            
+                    for (let i =0; i < checkbox.length; i++) {
+                        if (checkbox[i].checked) {
+                            validateCHeckbox = true;
+                            break;
+                        }
+                    }
+
+
+                    if (!validateCHeckbox) {
+                        alert('Выберите хотя бы один доступ к просмотру записи!');
+                        return;
+                    }
+
                     fetch('/border/{id}', {
                             method: "POST",
                             headers: {
@@ -116,12 +138,14 @@
                                 messageBlock.textContent = 'Данные обновлены успешно!';
                                 messageBlock.style.display = 'block';
                             }
+                            if (response.status == 403) {
+                                  messageBlock.textContent = 'Ошибка доступа!';
+                                  messageBlock.style.display = 'block';
+                              }
                             if (response.status == 500) {
                                   messageBlock.textContent = 'Ошибка данных!';
                                   messageBlock.style.display = 'block';
                               }
-                            // console.log(response)
-                        //    return response.text();
                         })
 
                         .then(function(text)  {
@@ -129,11 +153,25 @@
 
                         }).catch(function(error){
                             console.error(error);
-
                         })
 
                 });
 
+                let addCitizen = document.querySelector('#citisAdd');
+                var checkboxes = document.querySelectorAll('input.thing'),
+                checkall = document.getElementById('checkall');
+                for(var i=0; i<checkboxes.length; i++) {
+                checkboxes[i].onclick = function() {
+                    var checkedCount = document.querySelectorAll('input.thing:checked').length;
+                    checkall.checked = checkedCount > 0;
+                    checkall.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+                }
+                }
+                checkall.onclick = function() {
+                for(var i=0; i<checkboxes.length; i++) {
+                    checkboxes[i].checked = this.checked;
+                }
+                }
             </script> 
 
-        @endsection
+@endsection
