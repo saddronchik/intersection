@@ -47,12 +47,7 @@ class AvtosController extends Controller
     }
     public function indexavto(){
         $id_user = Auth::user()->id;
-        $avtos =  DB::table('avtos')
-            ->join('records', 'records.id_avto','=','avtos.id')
-            ->join('users', 'records.id_user','=','users.id')
-            ->select('avtos.id','avtos.id_citisen', 'avtos.brand_avto', 'avtos.addit_inf', 'avtos.regis_num', 'avtos.color','avtos.who_noticed','avtos.where_notice','avtos.detection_time','avtos.user')
-            ->where('records.id_user','=', $id_user)
-            ->get();
+        $avtos =  $this->avtosRepository->indexAvtosJoinRecordsUsers($id_user);
 
         return view('avtoUser', [
             'avtos'=>$avtos,
@@ -80,15 +75,7 @@ class AvtosController extends Controller
         $s = $request->s;
         $authUser = Auth::user()->id;
         $authUsername = Auth::user()->username;
-        $avtos = DB::table('avtos')
-            ->select('avtos.id','avtos.brand_avto','avtos.id_citisen', 'avtos.addit_inf', 'avtos.regis_num', 'avtos.color','avtos.who_noticed','avtos.where_notice','avtos.detection_time','avtos.user', 'avtos.id_user')        
-            ->where('avtos.id_citisen','LIKE',"%{$s}%")
-            ->orWhere('avtos.id','LIKE',"%{$s}%")
-            ->orWhere('avtos.regis_num','LIKE',"%{$s}%")
-            ->orWhere('avtos.brand_avto','LIKE',"%{$s}%")
-            ->orWhere('avtos.color','LIKE',"%{$s}%")
-            ->orWhere('avtos.user','LIKE',"%{$s}%")
-            ->paginate(5);
+        $avtos = $this->avtosRepository->serchAvtos($s);
         
         return view('avto', [
             "avtos"=>$avtos,
@@ -96,43 +83,20 @@ class AvtosController extends Controller
             "authUsername"=>$authUsername,
         ]);
     }
+
     public function searchAvtoUser(Request $request){
         $s = $request->s;
-        
         if (is_null($s)) {
             $id_user = Auth::user()->id;
-            $avtos =  DB::table('avtos')
-                ->join('records', 'records.id_avto','=','avtos.id')
-                ->join('users', 'records.id_user','=','users.id')
-                ->select('avtos.id','records.id_user', 'avtos.brand_avto','avtos.id_citisen', 'avtos.addit_inf', 'avtos.regis_num', 'avtos.color','avtos.who_noticed','avtos.where_notice','avtos.detection_time','avtos.user')
-                ->where('records.id_user','=', $id_user)
-                ->get();
-
+            $avtos =  $this->avtosRepository->indexAvtosJoinRecordsUsers($id_user);
+            
             return view('avtoUser', [
                 'avtos'=>$avtos,
                 'id_user'=>$id_user
             ]);
         }
         $id_user = Auth::user()->id;
-        $avtos =  DB::table('avtos')
-            ->join('records', 'records.id_avto','=','avtos.id')
-            ->join('users', 'records.id_user','=','users.id')
-            ->select('avtos.id','records.id_user', 'avtos.brand_avto','avtos.id_citisen', 'avtos.addit_inf', 'avtos.regis_num', 'avtos.color','avtos.who_noticed','avtos.where_notice','avtos.detection_time','avtos.user')
-            ->where('records.id_user','=', $id_user)
-            ->where('avtos.id_citisen','LIKE',"%{$s}%")
-            ->orWhere('avtos.brand_avto','LIKE',"%{$s}%")
-            ->where('records.id_user','=', $id_user)
-            ->orWhere('avtos.id','LIKE',"%{$s}%")
-            ->where('records.id_user','=', $id_user)
-            ->orWhere('avtos.user','LIKE',"%{$s}%")
-            ->where('records.id_user','=', $id_user)
-            ->orWhere('avtos.who_noticed','LIKE',"%{$s}%")
-            ->where('records.id_user','=', $id_user)
-            ->orWhere('avtos.where_notice','LIKE',"%{$s}%")
-            ->where('records.id_user','=', $id_user)
-            ->orWhere('avtos.detection_time','LIKE',"%{$s}%")
-            ->where('records.id_user','=', $id_user)
-            ->get();
+        $avtos =  $this->avtosRepository->serchAvtosJoinRecordsUsers($s,$id_user);
 
         return view('avtoUser', [
             'avtos'=>$avtos,
@@ -172,17 +136,17 @@ class AvtosController extends Controller
                 $avto->save();
                 $id_avto = $avto ->id;
           
-                foreach ($request->user as $user) {
-                   $records = Record::create([
-                       "id_user"=>$user,
-                       "id_avto"=>$id_avto
-       
+            foreach ($request->user as $user) {
+                $records = Record::create([
+                    "id_user"=>$user,
+                    "id_avto"=>$id_avto
                    ]);
                }
 
             return redirect('avtoslist');
  
     }
+    
     public function showBorderAvtos($id){
         $avtos = DB::table('avtos')
                 ->join('borders','avtos.id','=','borders.way_crossing')

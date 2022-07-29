@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CitisensController;
+
 use App\Notifications\Users;
 
 /*
@@ -19,9 +19,9 @@ use App\Notifications\Users;
         return view('welcome');
     });
 
-    Route::get('/viewMessages', [App\Http\Controllers\CitisenControl::class, 'viewMessages']);
-    Route::get('/listmessage/{id}', [App\Http\Controllers\CitisenControl::class, 'showmessages']);
-    Route::post('/message', [App\Http\Controllers\CitisenControl::class,'sendMessage']);
+    Route::get('/viewMessages', [App\Http\Controllers\HomeController::class, 'viewMessages']);
+    Route::get('/listmessage/{id}', [App\Http\Controllers\HomeController::class, 'showmessages']);
+    Route::post('/message', [App\Http\Controllers\HomeController::class,'sendMessage']);
 
 Auth::routes();
 
@@ -34,7 +34,7 @@ Route::group(['middleware'=>['role:user_сitisen|admin']],function(){
     
     Route::get('/citisen/{id}', [App\Http\Controllers\CitisenControl::class, 'show']);
     Route::get('citisen/citisenBorder/{id}', [App\Http\Controllers\CitisenControl::class, 'showBorderCitisen']);
-    Route::get('/citisens/exports', [App\Http\Controllers\CitisenControl::class, 'CitisenExport']);
+    Route::get('/citisens/exports', [App\Services\CitisensServices::class, 'CitisenExport']);
 
     Route::get('/peoplelist',[App\Http\Controllers\PeoplesController::class, 'index']);
 
@@ -44,8 +44,8 @@ Route::group(['middleware'=>['role:user_сitisen_add|admin']],function(){
     Route::get('/addcitisens', [App\Http\Controllers\CitisenControl::class, 'index']);
     
     Route::post('/citisens', [App\Http\Controllers\CitisenControl::class, 'store']);
-    Route::post('/citisens/import', [App\Http\Controllers\CitisenControl::class, 'CitisenImport']);
-    Route::post('/citisens/importNoHead', [App\Http\Controllers\CitisenControl::class, 'CitisenImportNoHead']);
+    Route::post('/citisens/import', [App\Services\CitisensServices::class, 'CitisenImport']);
+    Route::post('/citisens/importNoHead', [App\Services\CitisensServices::class, 'CitisenImportNoHead']);
     Route::get('/destroyCitisen/{id}', [App\Http\Controllers\CitisenControl::class, 'destroy']);
 });
 

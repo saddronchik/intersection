@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Citizen;
+use App\Models\Message;
 use App\Repositories\CitisensRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -74,9 +75,40 @@ class HomeController extends Controller
                 'authUsername' => $authUsername,
             ]);
         }
+        
         $id_user = Auth::user()->id;
         $citisens = $this->citisensRepository->getSearchUsersInCitisens($request);
 //подумать над правильностью
         return view('citisenUser', compact('citisens'));
+    }
+
+    public function sendMessage(Request $request){
+       
+        date_default_timezone_set("Europe/Moscow");
+        $params = $request->all();
+        $params['created_at'] = date('Y-m-d H:i:s');
+        $message = Message::create([
+            'from_user'=>$params['from'],
+            'to_user'=>$params['to'],
+            'message'=>$params['message'],
+        ]);
+      
+            return response()->json($params);
+        }
+
+    public function showmessages($id){
+        $messages = $this->citisensRepository->getShowMessages($id);
+
+        return response()->json(["messages" => $messages,]);
+    }
+
+    public function viewMessages(){
+        $authUser = Auth::user();
+
+        return view('citisens_message',["authUser"=>$authUser]);
+    }
+    
+    public function destroyMessage($id){
+        Message::destroy($id);
     }
 }

@@ -45,7 +45,8 @@ class CitisensImportNoHead implements ToModel
             'where_notice' => $row[18],
             'detection_time' => ($row[19]),
             // 'detection_time' => Date::excelToDateTimeObject($row[19]),
-            'user' => $row[20],
+            'id_user' => $row[20],
+            'user' => $row[21],
         ]);
 
         

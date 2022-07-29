@@ -93,7 +93,6 @@
                     <th scope="col-md-2">Где заметил</th>
                     <th scope="col-md-2">Время обнаружения</th>
                     <th scope="col-md-2">id</th>
-
                     <th scope="col-md-2">Сделал запись пользователь</th>
                   </tr>
                 </thead>
@@ -129,6 +128,7 @@
             </table>
   
   {{ $citisens->appends(['s'=>request()->s])->onEachSide(5)->links() }}
+
     </div>
     <input type="hidden" name="from" id="from" value="{{ $authUser}}">
     <input type="hidden" name="fromname" id="fromname" value="{{ $authUsername}}">
@@ -151,14 +151,15 @@
           to:toUserId,
           message: "Пользователь "+authUsername + " пытался зайти на вашу запись гражданина "+citisenname+ " находящаяся под id " +citisenId
         });
+
+        console.log(data);
         
-        const response = fetch('/message',{
+        const response = fetch('/message', {
         method: "POST",
         
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
-        'content')
+          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
           body:data
         })
@@ -166,14 +167,14 @@
         .then(function (response) {
         return response.json()
       })
-      .then(function (data) {
+        .then(function (data) {
         console.log('data', data)
       })
-      .catch(function (error) {
+        .catch(function (error) {
         console.log('error', error)
       })
       })
     })
-      </script>
+  </script>
           
 @endsection

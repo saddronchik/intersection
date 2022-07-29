@@ -11,7 +11,7 @@ interface CitisensInterface{
     public function getSearchCitisens(Request $request);
     public function getSearchUsersNullInCitisens(Request $request);
     public function getSearchUsersInCitisens(Request $request);
-    public function getUsersId();
+    public function getUsers();
     public function getShowMessages(int $id);
     public function getBorderCitisens(int $id);
 }

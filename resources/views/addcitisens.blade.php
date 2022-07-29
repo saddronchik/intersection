@@ -9,14 +9,23 @@
         <a class="btn btn-primary btn-sm mb-2 " href="home" role="button">Главная</a>
       </div>
     </div>
-
+    
   <div class="col-8">
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+      @endif
     <form method="POST" action="/citisens" enctype="multipart/form-data"  id="citisAdd" >
       
         @csrf
         <div class="form-group">
           <label for="full_name">ФИО</label>
-          <input type="text" class="typeahead form-control" name="full_name" id="full_name"  required>
+          <input type="text" class="typeahead form-control" name="full_name" id="full_name">
         </div>
         <div class="form-group">
           <label for="passport_data">Пасспортные данные</label>
@@ -86,62 +95,53 @@
         <div class="alert alert-success messages" role="alert" style="display: none"></div>
         <button type="submit" class="btn btn-primary" id="add-citizen">Добавить запись</button>
       </form>
+      
 </div>
 
-              <script>
-                const formUpdate = document.getElementById('citisAdd');
-                const messageBlock = document.querySelector('.messages');
+<script>
+   const formUpdate = document.getElementById('citisAdd');
+   const messageBlock = document.querySelector('.messages');
 
-                formUpdate.addEventListener('submit' , function(e){
-                    e.preventDefault();
-                    const formData = new FormData(this);
-                    const checkbox = document.querySelectorAll('.thing');
-                    let validateCHeckbox = false;
+      // formUpdate.addEventListener('submit' , function(e){
+      //     e.preventDefault();
+      //     const formData = new FormData(this);
+      //     const checkbox = document.querySelectorAll('.thing');
+      //     let validateCHeckbox = false;
 
-                    for (let i =0; i < checkbox.length; i++) {
-                        if (checkbox[i].checked) {
-                            validateCHeckbox = true;
-                            break;
-                        }
-                    }
+      //       for (let i =0; i < checkbox.length; i++) {
+      //           if (checkbox[i].checked) {
+      //               validateCHeckbox = true;
+      //               break;}
+      //               }
 
-                    if (!validateCHeckbox) {
-                        alert('Выберите хотя бы один доступ к просмотру записи!');
-                        return;
-                    }
-                    fetch('/citisens', {
-                            method: "POST",
-                            headers: {
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                    'content')
-                            },
-                            body: formData
-                            
-                        })
-                        .then(function(response) {
-                            if (response.status == 200) {
-                                messageBlock.textContent = 'Данные успешно добавленны!';
-                                messageBlock.style.display = 'block';
-                            }
-                            if (response.status == 403) {
-                                  messageBlock.textContent = 'Ошибка доступа!';
-                                  messageBlock.style.display = 'block';
-                              }
-                            console.log(response)
-                           return response.text();
-                        })
+      //           if (!validateCHeckbox) {
+      //             alert('Выберите хотя бы один доступ к просмотру записи!');
+      //             return;}
 
-                        .then(function(text)  {
-                            console.log('Success ' + text);
+      //       // fetch('/citisens', {
+      //       //       method: "POST",
+      //       //       headers: {"X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')},
+      //       //       body: formData })
+      //       //             .then(function(response) {
+      //       //                 if (response.status == 200) {
+      //       //                     messageBlock.textContent = 'Данные успешно добавленны!';
+      //       //                     messageBlock.style.display = 'block';
+      //       //                 }
+      //       //                 if (response.status == 403) {
+      //       //                       messageBlock.textContent = 'Ошибка доступа!';
+      //       //                       messageBlock.style.display = 'block';
+      //       //                   }
+      //       //                 console.log(response)
+      //       //                return response.text();
+      //       //             })
+      //       //             .then(function(text)  {
+      //       //                 console.log('Success ' + text);
+      //       //             }).catch(function(error){
+      //       //                 console.error(error);
+      //       //             })
+      //           });
 
-                        }).catch(function(error){
-                            console.error(error);
-
-                        })
-
-                });
-
-                let addCitizen = document.querySelector('#citisAdd');
+            let addCitizen = document.querySelector('#citisAdd');
             var checkboxes = document.querySelectorAll('input.thing'),
                 checkall = document.getElementById('checkall');
             for(var i=0; i<checkboxes.length; i++) {
@@ -166,7 +166,7 @@
           return;
         }
       });
-                let namePhone= 1;
+    let namePhone= 1;
     $('#addInputsPhone').click(function() {
     
         if (namePhone < 3) {
@@ -185,42 +185,7 @@
         }
       });
 
-                  // const formAdd = document.getElementById('citisAdd');
-                  // const messageBlock = document.querySelector('.messages');
-  
-                  // formAdd.addEventListener('submit' , function(e){
-                  //     e.preventDefault();
-  
-                  //     const formData = new FormData(this);
-                  //     fetch('/citisens', {
-                  //             method: "POST",
-                  //             headers: {
-                  //                 "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
-                  //                     'content')
-                  //             },
-                  //             body: formData
-                  //         })
-                  //         .then(function(response) {
-                  //             if (response.status == 200) {
-                  //                 messageBlock.textContent = 'Данные успешно добавленны!';
-                  //                 messageBlock.style.display = 'block';
-                  //             }
-                  //             // console.log(response)
-                  //         //    return response.text();
-                  //         })
-  
-                  //         .then(function(text)  {
-                  //             console.log('Success ' + text);
-  
-                  //         }).catch(function(error){
-                  //             console.error(error);
-  
-                  //         })
-  
-                  // });
-
-
-                </script>
+</script>
 
                 
 

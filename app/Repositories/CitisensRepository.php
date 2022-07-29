@@ -42,7 +42,7 @@ class CitisensRepository implements CitisensInterface
         return $result;
     }
 
-    public function getSearchUsersNullInCitisens(Request $request): Collection {
+    public function getSearchUsersNullInCitisens(Request $request)  {
         $s = $request->s;
         $id_user = Auth::user()->id;
         $result = DB::table('citizens')
@@ -55,7 +55,7 @@ class CitisensRepository implements CitisensInterface
         return $result;
     }
 
-    public function getSearchUsersInCitisens(Request $request): Collection {
+    public function getSearchUsersInCitisens(Request $request) {
         $s = $request->s;
         $id_user = Auth::user()->id;
         $result = DB::table('citizens')
@@ -73,7 +73,7 @@ class CitisensRepository implements CitisensInterface
         return $result;
     }
 
-    public function getUsersId(){
+    public function getUsers(){
         $result = DB::table('users')
             ->select('users.id','users.username')
             ->get();

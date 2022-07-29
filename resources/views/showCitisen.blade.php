@@ -5,11 +5,20 @@
 
         <div class="row">
             <div class="col-md-10">
-                
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <h1>{{ $citizen->full_name }}</h1>
                 <form action="" method="post" class="form" id="formUpdate"  enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="id" value="{{ $citizen->id }}">
+                    <input type="hidden" name="full_name" value="{{ $citizen->full_name }}">
                     <table class="table table-hover">
 
                         <tbody>
@@ -146,58 +155,54 @@
                 const formUpdate = document.getElementById('formUpdate');
                 const messageBlock = document.querySelector('.messages');
 
-                formUpdate.addEventListener('submit' , function(e){
-                    e.preventDefault();
+                // formUpdate.addEventListener('submit' , function(e){
+                //     e.preventDefault();
 
-                    const formData = new FormData(this);
-                    const checkbox = document.querySelectorAll('.thing');
-                    let validateCHeckbox = false;
+                //     const formData = new FormData(this);
+                //     const checkbox = document.querySelectorAll('.thing');
+                //     let validateCHeckbox = false;
 
             
-                    for (let i =0; i < checkbox.length; i++) {
-                        if (checkbox[i].checked) {
-                            validateCHeckbox = true;
-                            break;
-                        }
-                    }
+                //     for (let i =0; i < checkbox.length; i++) {
+                //         if (checkbox[i].checked) {
+                //             validateCHeckbox = true;
+                //             break;
+                //         }
+                //     }
 
+                //     if (!validateCHeckbox) {
+                //         alert('Выберите хотя бы один доступ к просмотру записи!');
+                //         return;
+                //     }
+                //     fetch('/citisen/{id}', {
+                //             method: "POST",
+                //             headers: {
+                //                 "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
+                //                     'content')},
+                //             body: formData
+                //         })
+                //         .then(function(response) {
+                //             if (response.status == 200) {
+                //                 messageBlock.textContent = 'Данные обновлены успешно!';
+                //                 messageBlock.style.display = 'block';
+                //             }
+                //             if (response.status == 403) {
+                //                   messageBlock.textContent = 'Ошибка доступа!';
+                //                   messageBlock.style.display = 'block';
+                //               }
+                //             console.log(response)
+                //            return response.text();
+                //         })
 
-                    if (!validateCHeckbox) {
-                        alert('Выберите хотя бы один доступ к просмотру записи!');
-                        return;
-                    }
-                    fetch('/citisen/{id}', {
-                            method: "POST",
-                            headers: {
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                    'content')
-                            },
-                            body: formData
-                            
-                        })
-                        .then(function(response) {
-                            if (response.status == 200) {
-                                messageBlock.textContent = 'Данные обновлены успешно!';
-                                messageBlock.style.display = 'block';
-                            }
-                            if (response.status == 403) {
-                                  messageBlock.textContent = 'Ошибка доступа!';
-                                  messageBlock.style.display = 'block';
-                              }
-                            console.log(response)
-                           return response.text();
-                        })
+                //         .then(function(text)  {
+                //             console.log('Success ' + text);
 
-                        .then(function(text)  {
-                            console.log('Success ' + text);
+                //         }).catch(function(error){
+                //             console.error(error);
 
-                        }).catch(function(error){
-                            console.error(error);
+                //         })
 
-                        })
-
-                });
-
+                // });
 
             let addCitizen = document.querySelector('#citisAdd');
 
@@ -227,6 +232,6 @@
                     }
                 });
 
-            </script>
+    </script>
 
 @endsection
