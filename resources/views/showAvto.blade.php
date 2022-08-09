@@ -10,7 +10,7 @@
                     @endforeach
                 </ul>
             </div>
-            @endif
+        @endif
         <div class="row">
             <div class="col-md-10"> 
                 <form action="/avto/{id}" method="post" enctype="multipart/form-data" class="form" id="formUpdate" >

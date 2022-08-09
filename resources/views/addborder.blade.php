@@ -12,9 +12,16 @@
 
       </div>
     </div>
- 
-    
                 <div class="col-8">
+                  @if ($errors->any())
+                      <div class="alert alert-danger">
+                          <ul>
+                              @foreach ($errors->all() as $error)
+                                  <li>{{ $error }}</li>
+                              @endforeach
+                          </ul>
+                      </div>
+                  @endif
                     <form method="POST" enctype="multipart/form-data" action="/borders" id="formAdd">
                         @csrf
                         <h1> Пересечение границы </h1>
@@ -102,8 +109,6 @@
                       </form>
                 </div>
 
-
-
 <script>
   
   let addCitizen = document.querySelector('#citisAdd');
@@ -126,42 +131,6 @@ checkall.onclick = function() {
   const formAdd = document.getElementById('formAdd');
   const messageBlock = document.querySelector('.messages');
 
-  formAdd.addEventListener('submit' , function(e){
-      e.preventDefault();
-
-      const formData = new FormData(this);
-      
-      fetch('/borders', {
-              method: "POST",
-              // enctype="multipart/form-data",
-              headers: {
-                  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
-                      'content')
-              },
-              body: formData
-          })
-          .then(function(response) {
-              if (response.status == 200) {
-                  messageBlock.textContent = 'Данные успешно добавленны!';
-                  messageBlock.style.display = 'block';
-              }
-              if (response.status == 500) {
-                  messageBlock.textContent = 'Ошибка при заполении данных!';
-                  messageBlock.style.display = 'block';
-              }
-            })
-
-
-          .then(function(text)  {
-              console.log('Success ' + text);
-
-          })
-          .catch(function(error){
-              console.error(error);
-
-          })
-
-  });
 
 </script>
 @endsection

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Exports\BordersExport;
+use App\Http\Requests\BorderCreateRequest;
 use App\Imports\BordersImport;
 use App\Imports\BordersImportNoHead;
+use App\Models\Avto;
 use App\Models\Border;
+use App\Models\Citizen;
 use App\Models\Record;
 use App\Models\User;
 use App\Repositories\BordersRepository;
@@ -53,18 +56,11 @@ class BorderController extends Controller
 
     public function indexa()
     {
-        $borders = DB::table('citizens')
-            ->select('citizens.id','citizens.full_name')
-            ->get();
+        $borders = Citizen::select('citizens.id','citizens.full_name')->get();
 
-        $avtos = DB::table('avtos')
-            ->select('avtos.id','avtos.brand_avto')
-            ->get();
+        $avtos = Avto::select('avtos.id','avtos.brand_avto')->get();
 
-        $users = DB::table('users')
-            ->select('users.id','users.username')
-            ->get();
-
+        $users = User::select('users.id','users.username')->get();
             return view('addborder',[
                 "borders"=>$borders,
                 "avtos"=>$avtos,
@@ -122,7 +118,7 @@ class BorderController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(BorderCreateRequest $request)
     {
         $params =  $request->only(['id_citisen','citizenship','full_name','date_birth','passport','crossing_date','crossing_time','way_crossing','checkpoint','route','place_birth','place_regis','user','id_user']);
         $params['user']= Auth::user()->username;
@@ -154,7 +150,7 @@ class BorderController extends Controller
         $border =  Border::find($id);
         $users = User::select('users.id','users.username')->get();
 
-        return view('showBorder',["users"=>$users],compact('border'));
+        return view('showBorder',["users"=>$users,"border"=>$border]);
     }
 
     /**
@@ -171,40 +167,25 @@ class BorderController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update(BorderCreateRequest $request)
     {
-        $params =  $request->only(['id','id_citisen','citizenship','full_name','date_birth','passport','crossing_date','crossing_time','way_crossing','checkpoint','route','place_birth','place_regis']);
-        $border = Border::find($params['id']);
 
-        $border->id_citisen = $params['id_citisen'];
-        $border->citizenship = $params['citizenship'];
-        $border->full_name = $params['full_name'];
-        $border->date_birth = $params['date_birth'];
-        $border->passport = $params['passport'];
-        $border->crossing_date = $params['crossing_date'];
-        $border->crossing_time = $params['crossing_time'];
-        $border->way_crossing = $params['way_crossing'];
-        $border->checkpoint = $params['checkpoint'];
-        $border->route = $params['route'];
-        $border->place_birth = $params['place_birth'];
-        $border->place_regis = $params['place_regis'];
+        $params = $request->all();
+        $border = Border::find($params['id']);
+        $params['user']= $border['user'];
+        $border->fill($params)->save();
 
         $id_border = $border ->id;
 
-           $delete = DB::table('records')->where('id_border',$id_border)->delete(); 
-          if (is_null($request->user)){
-            return $border->save();
-          }
-                foreach ($request->user as $user) {
-       
+        Record::where('id_border',$id_border)->delete(); 
+      
+            foreach ($request->user as $user) {
                 $records = Record::create([
                 "id_user"=>$user,
                 "id_border"=>$id_border
                 ]);}
-
-        return $border->save();
-        
-    
+        // $border->save();
+        return redirect('borderslist');
     }
 
     /**

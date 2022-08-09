@@ -2,6 +2,15 @@
 @section('content')
 
     <div class="container">
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <div class="row">
             <div class="col-md-10">
                 <div class="alert alert-success messages" role="alert" style="display: none"></div>  
@@ -103,59 +112,6 @@
                 
                 const formUpdate = document.getElementById('formUpdate');
                 const messageBlock = document.querySelector('.messages');
-
-                formUpdate.addEventListener('submit' , function(e){
-                    e.preventDefault();
-
-                    const formData = new FormData(this);
-                    const checkbox = document.querySelectorAll('.thing');
-                    let validateCHeckbox = false;
-
-            
-                    for (let i =0; i < checkbox.length; i++) {
-                        if (checkbox[i].checked) {
-                            validateCHeckbox = true;
-                            break;
-                        }
-                    }
-
-
-                    if (!validateCHeckbox) {
-                        alert('Выберите хотя бы один доступ к просмотру записи!');
-                        return;
-                    }
-
-                    fetch('/border/{id}', {
-                            method: "POST",
-                            headers: {
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                    'content')
-                            },
-                            body: formData
-                        })
-                        .then(function(response) {
-                            if (response.status == 200) {
-                                messageBlock.textContent = 'Данные обновлены успешно!';
-                                messageBlock.style.display = 'block';
-                            }
-                            if (response.status == 403) {
-                                  messageBlock.textContent = 'Ошибка доступа!';
-                                  messageBlock.style.display = 'block';
-                              }
-                            if (response.status == 500) {
-                                  messageBlock.textContent = 'Ошибка данных!';
-                                  messageBlock.style.display = 'block';
-                              }
-                        })
-
-                        .then(function(text)  {
-                            console.log('Success ' + text);
-
-                        }).catch(function(error){
-                            console.error(error);
-                        })
-
-                });
 
                 let addCitizen = document.querySelector('#citisAdd');
                 var checkboxes = document.querySelectorAll('input.thing'),

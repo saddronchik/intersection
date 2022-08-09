@@ -13,7 +13,7 @@ class BorderCreateRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,17 @@ class BorderCreateRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'id_citisen' => 'required',
+            'way_crossing' => 'required',
+            'user' => 'required',
+        ];
+    }
+    public function messages()
+    {
+        return[
+            'id_citisen.required' => 'Выберите гражданина!',
+            'way_crossing.required' => 'Выберите транспортное средство!',
+            'user.required' => 'Выберите пользователя!',
         ];
     }
 }
