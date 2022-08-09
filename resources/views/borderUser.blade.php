@@ -8,18 +8,12 @@
         
         <a class="btn btn-primary btn-sm mb-2 " role="button" data-bs-toggle="button" href="borderslist" role="button">Назад</a>
 
-
-
-
       </div>
     </div>  
-    
     
     <div class="col-10">
       
               <h1 class="display-8">Пересечение границы</h1>
-
- 
 
               <form method="GET" action="{{ route('searchBordersUser') }}">
                 <div class="form-row">

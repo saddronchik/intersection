@@ -36,21 +36,34 @@ Route::group(['middleware'=>['role:user_сitisen|admin']],function(){
     Route::get('citisen/citisenBorder/{id}', [App\Http\Controllers\CitisenControl::class, 'showBorderCitisen']);
     Route::get('/citisens/exports', [App\Services\CitisensServices::class, 'CitisenExport']);
 
-    Route::get('/peoplelist',[App\Http\Controllers\PeoplesController::class, 'index']);
+
+    Route::get('/searchPeople',[App\Http\Controllers\PeoplesController::class, 'searchPeople'])->name('searchPeople');
+    Route::get('/searchPeopleUser',[App\Http\Controllers\PeoplesController::class, 'searchPeopleUser'])->name('searchPeopleUser');
+
+    Route::get('/peoplelist',[App\Http\Controllers\PeoplesController::class, 'index'])->name('peoplelist');
+    Route::get('/peopleuser', [App\Http\Controllers\PeoplesController::class, 'indexUser'])->name('peopleuser');
+    Route::get('/people/{id}', [App\Http\Controllers\PeoplesController::class, 'show']);
 
      });
 
 Route::group(['middleware'=>['role:user_сitisen_add|admin']],function(){
+
     Route::get('/addcitisens', [App\Http\Controllers\CitisenControl::class, 'index']);
-    
+
     Route::post('/citisens', [App\Http\Controllers\CitisenControl::class, 'store']);
     Route::post('/citisens/import', [App\Services\CitisensServices::class, 'CitisenImport']);
     Route::post('/citisens/importNoHead', [App\Services\CitisensServices::class, 'CitisenImportNoHead']);
     Route::get('/destroyCitisen/{id}', [App\Http\Controllers\CitisenControl::class, 'destroy']);
+
+    Route::get('/addpeoples', [App\Http\Controllers\PeoplesController::class, 'addPeople']);
+    Route::post('/peoplesadd', [App\Http\Controllers\PeoplesController::class, 'store']);
+    Route::get('/destroyPeople/{id}', [App\Http\Controllers\PeoplesController::class, 'destroy']);
 });
 
 Route::group(['middleware'=>['role:user_сitisen_upd|admin']],function(){
     Route::post('/citisen/{id}', [App\Http\Controllers\CitisenControl::class, 'update'])->name('citisen');
+
+    Route::post('/people/{id}', [App\Http\Controllers\PeoplesController::class, 'update'])->name('people');
 });
 
 
@@ -58,12 +71,12 @@ Route::group(['middleware'=>['role:user_сitisen_upd|admin']],function(){
 Route::group(['middleware'=>['role:user_avto|admin']],function(){
         Route::get('/searchAvto',[App\Http\Controllers\AvtosController::class, 'searchAvto'])->name('searchAvto');
         Route::get('/searchAvtoUser',[App\Http\Controllers\AvtosController::class, 'searchAvtoUser'])->name('searchAvtoUser');
-        Route::get('/avtoslist', [App\Http\Controllers\AvtosController::class, 'index']);
+        Route::get('/avtoslist', [App\Http\Controllers\AvtosController::class, 'index'])->name('avtoslist');
         Route::get('/avtoslistusers', [App\Http\Controllers\AvtosController::class, 'indexavto']);
 
         Route::get('/avto/{id}', [App\Http\Controllers\AvtosController::class, 'show']);
         Route::get('avto/avtoBorder/{id}', [App\Http\Controllers\AvtosController::class, 'showBorderAvtos']);
-        Route::get('/avtos/exports', [App\Http\Controllers\AvtosController::class, 'AvtosExport']);
+        Route::get('/avtos/exports', [App\Services\AvtosServices::class, 'AvtosExport']);
         
         });
 
@@ -71,7 +84,7 @@ Route::group(['middleware'=>['role:user_avto_add|admin']],function(){
     Route::get('/addavtos', [App\Http\Controllers\AvtosController::class, 'indexAdd']);
     Route::get('/addcitis', [App\Http\Controllers\AvtosController::class, 'indexCitisen']);
     Route::post('/avtos', [App\Http\Controllers\AvtosController::class, 'store']);
-    Route::post('/avtos/import', [App\Http\Controllers\AvtosController::class, 'AvtosImport']);
+    Route::post('/avtos/import', [App\Services\AvtosServices::class, 'AvtosImport']);
     Route::get('/destroy/{id}', [App\Http\Controllers\AvtosController::class, 'destroy']);
 });      
 
@@ -88,9 +101,8 @@ Route::group(['middleware'=>['role:user_border|admin']],function(){
 
     // Route::get('/addavtos', [App\Http\Controllers\BorderController::class, 'indexAvtos']);
     Route::get('/border/{id}', [App\Http\Controllers\BorderController::class, 'show']);
-
-   
-    Route::get('/borders/exports', [App\Http\Controllers\BorderController::class, 'BordersExport']);
+    
+    Route::get('/borders/exports', [App\Services\BordersServices::class, 'BordersExport']);
     
     });
     
@@ -98,25 +110,25 @@ Route::group(['middleware'=>['role:user_border_add|admin']],function(){
     Route::post('/borders', [App\Http\Controllers\BorderController::class, 'store']);
     Route::get('/addborder', [App\Http\Controllers\BorderController::class, 'indexa']);
     Route::get('/destroyborder/{id}', [App\Http\Controllers\BorderController::class, 'destroy']);
-    Route::post('/borders/import', [App\Http\Controllers\BorderController::class, 'BordersImport']);
+    Route::post('/borders/import', [App\Services\BordersServices::class, 'BordersImport']);
 });
 Route::group(['middleware'=>['role:user_border_upd|admin']],function(){
     Route::post('/border/{id}', [App\Http\Controllers\BorderController::class, 'update']);
 });
  
 
-        Route::group(['middleware'=>['role:admin']],function(){
-            Route::get('/logs',[App\Http\Controllers\LogController::class, 'show']);
+Route::group(['middleware'=>['role:admin']],function(){
+        Route::get('/logs',[App\Http\Controllers\LogController::class, 'show']);
         
-            Route::get('/usersList', [App\Http\Controllers\UsersController::class, 'index'])->name('usersList');
+        Route::get('/usersList', [App\Http\Controllers\UsersController::class, 'index'])->name('usersList');
             
-            Route::get('/addusers', [App\Http\Controllers\UsersController::class, 'indexUser']);
-            Route::post('/users', [App\Http\Controllers\UsersController::class, 'store']);
+        Route::get('/addusers', [App\Http\Controllers\UsersController::class, 'indexUser']);
+        Route::post('/users', [App\Http\Controllers\UsersController::class, 'store']);
         
-            Route::get('/users/{id}', [App\Http\Controllers\UsersController::class, 'show']);
-            Route::post('/users/{id}', [App\Http\Controllers\UsersController::class, 'update']);
-            Route::get('/destroyuser/{id}', [App\Http\Controllers\UsersController::class, 'destroy']);
-            });
+        Route::get('/users/{id}', [App\Http\Controllers\UsersController::class, 'show']);
+        Route::post('/users/{id}', [App\Http\Controllers\UsersController::class, 'update']);
+        Route::get('/destroyuser/{id}', [App\Http\Controllers\UsersController::class, 'destroy']);
+});
 
 
 

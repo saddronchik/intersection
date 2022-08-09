@@ -7,6 +7,8 @@ use App\Imports\BordersImport;
 use App\Imports\BordersImportNoHead;
 use App\Models\Border;
 use App\Models\Record;
+use App\Models\User;
+use App\Repositories\BordersRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Auth\Events\Validated;
@@ -15,8 +17,11 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class BorderController extends Controller
 {
-    public function __construct()
+    private $borderRepository;
+
+    public function __construct(BordersRepository $borderRepository)
     {
+        $this->borderRepository = $borderRepository;
         $this->middleware('auth');
     }
     /**
@@ -26,11 +31,7 @@ class BorderController extends Controller
      */
     public function index()
     {
-        $borders = DB::table('borders')
-        ->join('citizens','citizens.id','=','borders.id_citisen')
-        ->join('avtos','avtos.id','=','borders.way_crossing')
-        ->select('borders.id','citizens.full_name', 'borders.citizenship', 'borders.date_birth', 'borders.passport', 'borders.crossing_date', 'avtos.brand_avto','borders.checkpoint','borders.route','borders.id_user')
-        ->paginate(5);
+        $borders = $this->borderRepository->indexBorder();
         $authUser = Auth::user()->id;
         $authUsername = Auth::user()->username;
 
@@ -43,14 +44,7 @@ class BorderController extends Controller
     public function indexUser()
     {
         $id_user = Auth::user()->id;
-        $borders = DB::table('borders')
-        ->join('records', 'records.id_border','=','borders.id')
-        ->join('users', 'records.id_user','=','users.id')
-        ->join('citizens','citizens.id','=','borders.id_citisen')
-        ->join('avtos','avtos.id','=','borders.way_crossing')
-        ->select('borders.id','records.id_user','citizens.full_name', 'borders.citizenship', 'borders.date_birth', 'borders.passport', 'borders.crossing_date', 'avtos.brand_avto','borders.checkpoint','borders.route')
-        ->where('records.id_user','=', $id_user)
-        ->get();
+        $borders = $this->borderRepository->indexBorderUser($id_user);
             return view('borderUser',[
                 'borders'=>$borders,
                 'id_user'=>$id_user
@@ -60,92 +54,55 @@ class BorderController extends Controller
     public function indexa()
     {
         $borders = DB::table('citizens')
+            ->select('citizens.id','citizens.full_name')
+            ->get();
 
-        ->select('citizens.id','citizens.full_name')
-        ->get();
         $avtos = DB::table('avtos')
-
-        ->select('avtos.id','avtos.brand_avto')
-        ->get();
+            ->select('avtos.id','avtos.brand_avto')
+            ->get();
 
         $users = DB::table('users')
-        ->select('users.id','users.username')
-        ->get();
+            ->select('users.id','users.username')
+            ->get();
 
             return view('addborder',[
                 "borders"=>$borders,
                 "avtos"=>$avtos,
-                "users"=>$users
-]);
+                "users"=>$users]);
 
     }
 
- 
     public function indexAdd(){
         return view('addborder');
     }
 
     public function searchBorders(Request $request){
+        
         $s = $request->s;
         $authUser = Auth::user()->id;
         $authUsername = Auth::user()->username;
-        $borders = DB::table('borders')
-        ->join('citizens','citizens.id','=','borders.id_citisen')
-        ->join('avtos','avtos.id','=','borders.way_crossing')
-        ->select('borders.id','citizens.full_name', 'borders.citizenship', 'borders.date_birth', 'borders.passport', 'borders.crossing_date', 'avtos.brand_avto','borders.checkpoint','borders.route','borders.id_user')
-        ->where('citizens.full_name','LIKE',"%{$s}%")
-        ->orWhere('avtos.brand_avto','LIKE',"%{$s}%")
-        ->orWhere('borders.id','LIKE',"%{$s}%")
-        ->orWhere('borders.citizenship','LIKE',"%{$s}%")
-        ->orWhere('borders.passport','LIKE',"%{$s}%")
-        ->orWhere('avtos.regis_num','LIKE',"%{$s}%")
-        ->paginate(5);
-
+        $borders = $this->borderRepository->serchBorder($s);
+        
             return view('border',[
                 "borders"=>$borders,
                 "authUser"=>$authUser,
                 "authUsername"=>$authUsername
-                ]);
+            ]);
     }
+
     public function searchBordersUser(Request $request){
         $s = $request->s;
-
+        $id_user = Auth::user()->id;
         if (is_null($s)) {
-            $id_user = Auth::user()->id;
-            $borders = DB::table('borders')
-                ->join('records', 'records.id_border','=','borders.id')
-                ->join('users', 'records.id_user','=','users.id')
-                ->join('citizens','citizens.id','=','borders.id_citisen')
-                ->join('avtos','avtos.id','=','borders.way_crossing')
-                ->select('borders.id','records.id_user','citizens.full_name', 'borders.citizenship', 'borders.date_birth', 'borders.passport', 'borders.crossing_date', 'avtos.brand_avto','borders.checkpoint','borders.route')
-                ->where('records.id_user','=', $id_user)
-                ->get();
-
+            
+            $borders = $this->borderRepository->serchBorderUserNull($id_user);
             return view('borderUser',[
                 'borders'=>$borders,
                 'id_user'=>$id_user
             ]);
         }
-        $id_user = Auth::user()->id;
-        $borders = DB::table('borders')
-            ->join('records', 'records.id_border','=','borders.id')
-            ->join('users', 'records.id_user','=','users.id')
-            ->join('citizens','citizens.id','=','borders.id_citisen')
-            ->join('avtos','avtos.id','=','borders.way_crossing')
-            ->select('borders.id','records.id_user','citizens.full_name', 'borders.citizenship', 'borders.date_birth', 'borders.passport', 'borders.crossing_date', 'avtos.brand_avto','borders.checkpoint','borders.route')
-            ->where('records.id_user','=', $id_user)
-            ->where('citizens.full_name','LIKE',"%{$s}%")
-            ->orWhere('avtos.brand_avto','LIKE',"%{$s}%")
-            ->where('records.id_user','=', $id_user)
-            ->orWhere('borders.id','LIKE',"%{$s}%")
-            ->where('records.id_user','=', $id_user)
-            ->orWhere('borders.citizenship','LIKE',"%{$s}%")
-            ->where('records.id_user','=', $id_user)
-            ->orWhere('borders.passport','LIKE',"%{$s}%")
-            ->where('records.id_user','=', $id_user)
-            ->orWhere('avtos.regis_num','LIKE',"%{$s}%")
-            ->where('records.id_user','=', $id_user)
-            ->get();
+       
+        $borders = $this->borderRepository->serchBorderUser($id_user,$s);
 
             return view('borderUser',[
                 'borders'=>$borders,
@@ -158,10 +115,6 @@ class BorderController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -189,22 +142,6 @@ class BorderController extends Controller
        }
         return redirect('borderslist');
     }
-    public function BordersExport(){
-        return Excel::download(new BordersExport, 'borders.xlsx');
-    }
-
-    public function BordersImport(Request $request){
-
-        if ($request['haveHead'] == true) {
-            Excel::import(new  BordersImport, $request->file('files'));
-        
-            return back()->withStatus('Успешно импортировано c шапкой!');
-        } elseif ($request['haveHead'] == null) {
-            Excel::import(new BordersImportNoHead, $request->file('files'));
-        
-            return back()->withStatus('Успешно импортировано без шапки!');
-        }
-    }
 
     /**
      * Display the specified resource.
@@ -215,12 +152,9 @@ class BorderController extends Controller
     public function show($id)
     {
         $border =  Border::find($id);
-        $users = DB::table('users')
-            ->select('users.id','users.username')
-            ->get();
+        $users = User::select('users.id','users.username')->get();
+
         return view('showBorder',["users"=>$users],compact('border'));
-
-
     }
 
     /**
@@ -229,10 +163,6 @@ class BorderController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.

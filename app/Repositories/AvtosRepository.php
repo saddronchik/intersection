@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\Avto;
 use App\Repositories\Interfaces\AvtosInterface;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -64,6 +65,15 @@ class AvtosRepository implements AvtosInterface
             ->where('records.id_user','=', $id_user)
             ->get();
         return $result;
+    }
+
+    public function getBorderAvtos($id){
+      $result = Avto::join('borders','avtos.id','=','borders.way_crossing')
+        ->select('avtos.id','avtos.brand_avto','avtos.regis_num','borders.full_name','borders.passport','borders.crossing_date','borders.checkpoint')
+        ->where('borders.way_crossing','=',$id)
+        ->get();
+
+      return $result;
     }
 
 

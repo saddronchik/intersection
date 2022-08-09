@@ -7,6 +7,7 @@
     <div class="col-2">
       <div class="nav flex-column nav-pills" aria-orientation="vertical">
         <a class="btn btn-primary btn-sm mb-2 " href="home" role="button">Главная</a>
+        <a class="btn btn-primary btn-sm mb-2 " href="peoplelist" role="button">Назад</a>
       </div>
     </div>
     
@@ -20,7 +21,8 @@
         </ul>
     </div>
       @endif
-    <form method="POST" action="/citisens" enctype="multipart/form-data"  id="citisAdd" >
+
+    <form method="POST" action="/peoplesadd" enctype="multipart/form-data"  id="citisAdd" >
       
         @csrf
         <div class="form-group">
@@ -61,30 +63,11 @@
           <input class="btn btn-primary btn-sm mt-2" type="button" value="+" id="addInputs" />
         </div>
 
-
         <div class="form-group">
           <label for="addit_inf">Доп информация</label>         
           <textarea class="form-control" name="addit_inf" id="addit_inf" rows="3"></textarea>
         </div>
-        <div class="form-group">
-          <label for="who_noticed">Кто заметил</label>         
-          {{-- <input type="text" class="form-control" name="who_noticed" id="who_noticed"> --}}
-          <select name="who_noticed" id="who_noticed"  class="selectpicker" data-style="btn-info" data-live-search="true">
-            <option data-tokens="ketchup mustard" data-style="btn-info" value="Не определенно" >Выберите человека</option>
-            @foreach($peoples as $people)
-            <option name="who_noticed" id="who_noticed"  value="{{$people->full_name}}" data-subtext="{{$people->id}}" >{{$people->full_name}} </option>
-              @endforeach
-          </select>
-
-        </div>
-        <div class="form-group">
-          <label for="where_notice">Где заметил</label>         
-          <input type="text" class="form-control" name="where_notice" id="where_notice">
-        </div>
-        <div class="form-group">
-          <label for="detection_time">Время обнаружения</label>         
-          <input type="datetime-local" class="form-control" name="detection_time" id="detection_time">
-        </div>
+        
         <div class="form-group">
           <label for="">Доступ к просмотру записи</label>
 
@@ -98,8 +81,6 @@
           </fieldset>
         </div>
 
-
-        <div class="alert alert-success messages" role="alert" style="display: none"></div>
         <button type="submit" class="btn btn-primary" id="add-citizen">Добавить запись</button>
       </form>
       
@@ -107,46 +88,6 @@
 
 <script>
    const formUpdate = document.getElementById('citisAdd');
-   const messageBlock = document.querySelector('.messages');
-
-      // formUpdate.addEventListener('submit' , function(e){
-      //     e.preventDefault();
-      //     const formData = new FormData(this);
-      //     const checkbox = document.querySelectorAll('.thing');
-      //     let validateCHeckbox = false;
-
-      //       for (let i =0; i < checkbox.length; i++) {
-      //           if (checkbox[i].checked) {
-      //               validateCHeckbox = true;
-      //               break;}
-      //               }
-
-      //           if (!validateCHeckbox) {
-      //             alert('Выберите хотя бы один доступ к просмотру записи!');
-      //             return;}
-
-      //       // fetch('/citisens', {
-      //       //       method: "POST",
-      //       //       headers: {"X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')},
-      //       //       body: formData })
-      //       //             .then(function(response) {
-      //       //                 if (response.status == 200) {
-      //       //                     messageBlock.textContent = 'Данные успешно добавленны!';
-      //       //                     messageBlock.style.display = 'block';
-      //       //                 }
-      //       //                 if (response.status == 403) {
-      //       //                       messageBlock.textContent = 'Ошибка доступа!';
-      //       //                       messageBlock.style.display = 'block';
-      //       //                   }
-      //       //                 console.log(response)
-      //       //                return response.text();
-      //       //             })
-      //       //             .then(function(text)  {
-      //       //                 console.log('Success ' + text);
-      //       //             }).catch(function(error){
-      //       //                 console.error(error);
-      //       //             })
-      //           });
 
             let addCitizen = document.querySelector('#citisAdd');
             var checkboxes = document.querySelectorAll('input.thing'),
@@ -193,7 +134,5 @@
       });
 
 </script>
-
-                
 
 @endsection

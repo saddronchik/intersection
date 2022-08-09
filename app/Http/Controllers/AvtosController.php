@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Exports\AvtosExport;
+use App\Http\Requests\AvtoCreateRequest;
 use App\Imports\AvtosImport;
 use App\Imports\AvtosImportNoHead;
 use App\Models\Avto;
+use App\Models\Citizen;
 use App\Models\Record;
+use App\Models\User;
 use App\Repositories\AvtosRepository;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -45,6 +48,7 @@ class AvtosController extends Controller
         ]);
         
     }
+
     public function indexavto(){
         $id_user = Auth::user()->id;
         $avtos =  $this->avtosRepository->indexAvtosJoinRecordsUsers($id_user);
@@ -57,12 +61,9 @@ class AvtosController extends Controller
 
 
     public function indexAdd(){
-        $citisens = DB::table('citizens')
-            ->select('citizens.id','citizens.full_name')
-            ->get();
-        $users = DB::table('users')
-            ->select('users.id','users.username')
-            ->get();
+
+        $citisens = Citizen::select('citizens.id','citizens.full_name')->get();
+        $users = User::select('users.id','users.username')->get();
         
         return view('addavtos',[
             "citisens"=>$citisens,
@@ -109,10 +110,6 @@ class AvtosController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -120,8 +117,9 @@ class AvtosController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(AvtoCreateRequest $request)
     {
+        
             if ( $path = $request->file('photo')) {
                 $path = $request->file('photo')->store('avtos');
             }else {
@@ -144,37 +142,15 @@ class AvtosController extends Controller
                }
 
             return redirect('avtoslist');
- 
     }
     
     public function showBorderAvtos($id){
-        $avtos = DB::table('avtos')
-                ->join('borders','avtos.id','=','borders.way_crossing')
-                ->select('avtos.id','avtos.brand_avto','avtos.regis_num','borders.full_name','borders.passport','borders.crossing_date','borders.checkpoint')
-                ->where('borders.way_crossing','=',$id)
-                ->get();
+        $avtos = $this->avtosRepository->getBorderAvtos($id);
 
         return view('avtos_border',["avtos"=>$avtos]);
         
     }
-
-
-
-    public function AvtosExport(){
-        return Excel::download(new AvtosExport, 'avtos.xlsx');
-    }
-    public function AvtosImport(Request $request){
-        if ($request['haveHead'] == true) {
-            Excel::import(new  AvtosImport, $request->file('files'));
-        
-            return back()->withStatus('Успешно импортировано c шапкой!');
-        } elseif ($request['haveHead'] == null) {
-            Excel::import(new AvtosImportNoHead, $request->file('files'));
-        
-            return back()->withStatus('Успешно импортировано без шапки!');
-        }
-    }
-
+    
     /**
      * Display the specified resource.
      *
@@ -184,9 +160,7 @@ class AvtosController extends Controller
     public function show($id)
     {
         $avto = Avto::find($id);
-        $users = DB::table('users')
-            ->select('users.id','users.username')
-            ->get();
+        $users = User::select('users.id','users.username')->get();
 
         return view('showAvto',["users"=>$users], compact('avto'));
     }
@@ -197,10 +171,6 @@ class AvtosController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
@@ -210,60 +180,43 @@ class AvtosController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    public function update(Request $request, Avto $avto)
+    public function update(AvtoCreateRequest $request, Avto $avto)
     {
-        $params = $request->only(['id','id_citisen','brand_avto','regis_num','color','photo','addit_inf','who_noticed','where_notice','detection_time','user']); 
+       
+        $params = $request->all(); 
         $avto = Avto::find($params['id']);
+        $params['user']= $avto['user'];
         if ( $request->photo==null) {
-            $avto->id_citisen = $params["id_citisen"];
-            $avto->brand_avto = $params["brand_avto"];
-            $avto->regis_num = $params["regis_num"];
-            $avto->who_noticed = $params["who_noticed"];
-            $avto->where_notice = $params["where_notice"];
-            $avto->detection_time = $params["detection_time"];
-            $avto->addit_inf = $params["addit_inf"];
+            $result = $avto->fill($params)->save();
 
             $id_avto = $avto ->id;
-
-           $delete = DB::table('records')->where('id_avto',$id_avto)->delete(); 
-          if (is_null($request->user)){
-            return $avto->save();
-          }
-                foreach ($request->user as $user) {
-                $records = Record::create([
-                "id_user"=>$user,
-                "id_avto"=>$id_avto
-                ]);}
-
-        return $avto->save();
+            
+           Record::where('id_avto',$id_avto)->delete(); 
+           
+            foreach ($request->user as $user) {
+            $records = Record::create([
+            "id_user"=>$user,
+            "id_avto"=>$id_avto
+            ]);}
+                $avto->save();
+        return redirect()->route('avtoslist');
         }else {
             Storage::delete($avto->photo);
         
             $path = $request->file('photo')->store('avtos');
             $params['photo']=$path;
-            $avto->id_citisen = $params["id_citisen"];
-            $avto->brand_avto = $params["brand_avto"];
-            $avto->regis_num = $params["regis_num"];
-            $avto->color = $params["color"];
-            $avto->photo = $params["photo"];
-            $avto->who_noticed = $params["who_noticed"];
-            $avto->where_notice = $params["where_notice"];
-            $avto->detection_time = $params["detection_time"];
-            $avto->addit_inf = $params["addit_inf"];
+            $avto->fill($params)->save();
 
         $id_avto = $avto ->id;
-       if (is_null($request->user)){
-         return $avto->save();
-       }else {
-        $delete = DB::table('records')->where('id_avto',$id_avto)->delete(); 
+       
+        Record::where('id_avto',$id_avto)->delete(); 
         foreach ($request->user as $user) {
         $records = Record::create([
         "id_user"=>$user,
         "id_avto"=>$id_avto
         ]);}
-       }
-       
-        return $avto->save();
+        $avto->save();
+        return redirect()->route('avtoslist');
     }
     }
 

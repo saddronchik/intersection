@@ -12,19 +12,19 @@
     </div>
  
                 <div class="col-8">
+                  
+            @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
                     <form method="POST" enctype="multipart/form-data" action="/avtos" id="formAdd">
                         @csrf
                         <h1> Добавление автомобилей </h1>
-
-                                    @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
                         
                         <div class="form-group">
                           <label for="id_citisen">ID Владельца</label>
@@ -99,57 +99,57 @@
                const formUpdate = document.getElementById('formAdd');
                 const messageBlock = document.querySelector('.messages');
 
-                formUpdate.addEventListener('submit' , function(e){
-                    e.preventDefault();
+                // formUpdate.addEventListener('submit' , function(e){
+                //     e.preventDefault();
 
-                    const formData = new FormData(this);
-                    const checkbox = document.querySelectorAll('.thing');
-                    let validateCHeckbox = false;
+                //     const formData = new FormData(this);
+                //     const checkbox = document.querySelectorAll('.thing');
+                //     let validateCHeckbox = false;
 
             
-                    for (let i =0; i < checkbox.length; i++) {
-                        if (checkbox[i].checked) {
-                            validateCHeckbox = true;
-                            break;
-                        }
-                    }
+                //     for (let i =0; i < checkbox.length; i++) {
+                //         if (checkbox[i].checked) {
+                //             validateCHeckbox = true;
+                //             break;
+                //         }
+                //     }
 
 
-                    if (!validateCHeckbox) {
-                        alert('Выберите хотя бы один доступ к просмотру записи!');
-                        return;
-                    }
-                    fetch('/avtos', {
-                            method: "POST",
-                            headers: {
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                    'content')
-                            },
-                            body: formData
+                //     if (!validateCHeckbox) {
+                //         alert('Выберите хотя бы один доступ к просмотру записи!');
+                //         return;
+                //     }
+                //     fetch('/avtos', {
+                //             method: "POST",
+                //             headers: {
+                //                 "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
+                //                     'content')
+                //             },
+                //             body: formData
                             
-                        })
-                        .then(function(response) {
-                            if (response.status == 200) {
-                                messageBlock.textContent = 'Данные успешно добавленны!';
-                                messageBlock.style.display = 'block';
-                            }
-                            if (response.status == 403) {
-                                  messageBlock.textContent = 'Ошибка доступа!';
-                                  messageBlock.style.display = 'block';
-                              }
-                            console.log(response)
-                           return response.text();
-                        })
+                //         })
+                //         .then(function(response) {
+                //             if (response.status == 200) {
+                //                 messageBlock.textContent = 'Данные успешно добавленны!';
+                //                 messageBlock.style.display = 'block';
+                //             }
+                //             if (response.status == 403) {
+                //                   messageBlock.textContent = 'Ошибка доступа!';
+                //                   messageBlock.style.display = 'block';
+                //               }
+                //             console.log(response)
+                //            return response.text();
+                //         })
 
-                        .then(function(text)  {
-                            console.log('Success ' + text);
+                //         .then(function(text)  {
+                //             console.log('Success ' + text);
 
-                        }).catch(function(error){
-                            console.error(error);
+                //         }).catch(function(error){
+                //             console.error(error);
 
-                        })
+                //         })
 
-                });
+                // });
 
   let addCitizen = document.querySelector('#citisAdd');
 

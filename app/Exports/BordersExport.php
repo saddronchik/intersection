@@ -19,7 +19,7 @@ class BordersExport implements FromView
         $borders = DB::table('borders')
         ->join('citizens','citizens.id','=','borders.id_citisen')
         ->join('avtos','avtos.id','=','borders.way_crossing')
-        ->select('borders.id','citizens.full_name', 'borders.citizenship', 'borders.date_birth', 'borders.passport', 'borders.crossing_date','borders.crossing_time','borders.way_crossing', 'avtos.brand_avto','borders.checkpoint','borders.route','borders.place_birth','borders.place_regis')
+        ->select('borders.id_citisen','citizens.id','citizens.full_name', 'borders.citizenship', 'borders.date_birth', 'borders.passport', 'borders.crossing_date','borders.crossing_time','borders.way_crossing', 'avtos.id','avtos.brand_avto','borders.checkpoint','borders.route','borders.place_birth','borders.place_regis','borders.user','borders.id_user')
         ->get();
 
 

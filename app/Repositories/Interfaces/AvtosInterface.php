@@ -11,5 +11,6 @@ interface AvtosInterface
     public function indexAvtosJoinRecordsUsers($id_user);
     public function serchAvtos($s);
     public function serchAvtosJoinRecordsUsers($s,$id_user);
+    public function getBorderAvtos($id);
 
 }

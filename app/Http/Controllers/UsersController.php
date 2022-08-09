@@ -120,7 +120,7 @@ class UsersController extends Controller
 
        $users->save();
 
-        return  $users;
+       return  $users;
     }
 
     /**

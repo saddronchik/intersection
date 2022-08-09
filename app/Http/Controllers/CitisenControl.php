@@ -9,6 +9,7 @@ use App\Models\Message;
 use App\Models\Record;
 use App\Models\User;
 use App\Models\Border;
+use App\Models\Peoples;
 use App\Repositories\CitisensRepository;
 use App\Services\CitisensServices;
 use Exception;
@@ -37,7 +38,8 @@ class CitisenControl extends Controller
     public function index()
     {
         $users = User::select('id','username')->get();
-        return view('addcitisens',["users"=>$users]);
+        $peoples = Peoples::select('id','full_name')->get();
+        return view('addcitisens',["users"=>$users,"peoples"=>$peoples]);
     }
 
     /**
@@ -47,6 +49,7 @@ class CitisenControl extends Controller
      */
     public function create()
     {
+
         return view('addcitisens');
     } 
 
@@ -135,7 +138,7 @@ class CitisenControl extends Controller
 
             $id_citisen = $citizen ->id;
 
-           $delete = DB::table('records')->where('id_citisen',$id_citisen)->delete(); 
+           Record::where('id_citisen',$id_citisen)->delete(); 
           
             foreach ($request->user as $user) {
                 $records = Record::create([
@@ -158,7 +161,7 @@ class CitisenControl extends Controller
         
         $id_citisen = $citizen ->id;
 
-        Record::delete($id_citisen);
+        Record::where('id_citisen',$id_citisen)->delete();
 
         // $delete = DB::table('records')->where('id_citisen',$id_citisen)->delete(); 
             foreach ($request->user as $user) {
@@ -166,7 +169,7 @@ class CitisenControl extends Controller
                 "id_user"=>$user,
                 "id_citisen"=>$id_citisen]);
             }
-            $records->save();
+                $records->save();
                 $citizen->save();
             return redirect()->route('home');
         }

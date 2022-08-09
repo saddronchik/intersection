@@ -11,6 +11,7 @@
                       <th style="width:20px"><b>Кто заметил</b> </th>
                       <th style="width:20px"><b>Где заметил	</b> </th>
                       <th style="width:20px"><b>Время обнаружения</b> </th>
+                      <th style="width:20px"><b>id пользователя</b> </th>
                       <th style="width:20px"><b>Сделал запись</b> </th>
                     </tr>
                   </thead>
@@ -26,6 +27,7 @@
                       <td>{{ $avto->who_noticed }}</td>
                       <td>{{ $avto->where_notice }}</td>
                       <td>{{ $avto->detection_time }}</td>
+                      <td>{{ $avto->id_user }}</td>
                       <td>{{ $avto->user }}</td>
                     </tr>
                     @endforeach

@@ -40,7 +40,8 @@ class AvtosImport implements ToCollection
                 'where_notice' => $row[7],
                 // 'detection_time' =>Date::excelToDateTimeObject($row[8]),
                 'detection_time' =>($row[8]),
-                'user' =>$row[9],
+                'id_user' =>$row[9],
+                'user' =>$row[10],
             ]);
         }
     }
